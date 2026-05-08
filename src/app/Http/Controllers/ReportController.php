@@ -15,17 +15,31 @@ class ReportController extends Controller
         $this->reportService = $reportService;
     }
 
-    public function index()
+    public function index(Request $request)
     {
         $employees = $this->reportService->getAllEmployeesForReport();
-        return Inertia::render('Reports', ['employees' => $employees]);
+        $employeeId = $request->employee_id;
+
+        $report = null;
+        if ($employeeId) {
+            $report = $this->reportService->generateIndividualReport($employeeId);
+        }
+
+        return Inertia::render('Reports', [
+            'employees' => $employees,
+            'individualReport' => $report,
+        ]);
     }
 
     public function individual(Request $request)
     {
+        $employees = $this->reportService->getAllEmployeesForReport();
         $employeeId = $request->employee_id;
-        $report = $this->reportService->generateIndividualReport($employeeId);
-        return Inertia::render('Reports', ['individualReport' => $report]);
+        $report = $employeeId ? $this->reportService->generateIndividualReport($employeeId) : null;
+        return Inertia::render('Reports', [
+            'employees' => $employees,
+            'individualReport' => $report,
+        ]);
     }
 
     public function group(Request $request)

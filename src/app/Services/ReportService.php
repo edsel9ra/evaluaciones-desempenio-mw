@@ -26,15 +26,60 @@ class ReportService
         $employee = Employee::with(['role', 'position'])->findOrFail($employeeId);
         $evaluations = Evaluation::where('employee_id', $employeeId)
             ->where('status', 'completed')
+            ->with(['items', 'evaluator'])
             ->orderBy('evaluator_completed_date')
             ->get();
+
+        $allCompetencies = \App\Models\Competency::all();
+        $allIndicators = \App\Models\Indicator::all();
+
+        $evaluationsWithItems = $evaluations->map(function ($eval) use ($allCompetencies, $allIndicators) {
+            $competencyData = [];
+            $indicatorData = [];
+
+            foreach ($eval->items ?? [] as $item) {
+                if ($item->item_type === 'competency') {
+                    $comp = $allCompetencies->find($item->item_id);
+                    if ($comp) {
+                        $competencyData[] = [
+                            'id' => $comp->id,
+                            'name' => $comp->name,
+                            'score' => $item->score,
+                        ];
+                    }
+                } else {
+                    $ind = $allIndicators->find($item->item_id);
+                    if ($ind) {
+                        $indicatorData[] = [
+                            'id' => $ind->id,
+                            'name' => $ind->name,
+                            'score' => $item->score,
+                        ];
+                    }
+                }
+            }
+
+            return [
+                'id' => $eval->id,
+                'period' => $eval->period,
+                'status' => $eval->status,
+                'total_score' => $eval->total_score,
+                'competency_score' => $eval->competency_score,
+                'indicator_score' => $eval->indicator_score,
+                'created_at' => $eval->created_at,
+                'evaluator_completed_date' => $eval->evaluator_completed_date,
+                'evaluator' => $eval->evaluator,
+                'competencies' => $competencyData,
+                'indicators' => $indicatorData,
+            ];
+        });
 
         $scores = $evaluations->pluck('total_score')->toArray();
         $avgScore = count($scores) > 0 ? array_sum($scores) / count($scores) : 0;
 
         return [
             'employee' => $employee,
-            'evaluations' => $evaluations,
+            'evaluations' => $evaluationsWithItems,
             'averageScore' => round($avgScore, 2),
             'highestScore' => count($scores) > 0 ? max($scores) : 0,
             'lowestScore' => count($scores) > 0 ? min($scores) : 0,

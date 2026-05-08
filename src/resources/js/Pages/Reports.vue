@@ -9,168 +9,217 @@
 
         <div class="border-b border-surface-200 overflow-x-auto">
             <div class="flex gap-1 min-w-max">
-                <button v-for="tab in filteredTabs" :key="tab.key" @click="activeTab = tab.key"
+                <button v-for="tab in filteredTabs" :key="tab.key" @click="changeTab(tab.key)"
                     class="tab-button whitespace-nowrap" :class="{ 'tab-button-active': activeTab === tab.key }">
                     {{ tab.label }}
                 </button>
             </div>
         </div>
 
-        <!-- Individual Report -->
         <div v-if="activeTab === 'individual'" class="space-y-6">
             <div class="card">
-                <div class="card-header">
+                <div class="card-header flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                     <h2 class="font-semibold text-surface-900">Seleccionar Empleado</h2>
+                    <div v-if="selectedEmployeeName" class="flex items-center gap-2 text-sm text-surface-600">
+                        <span>Seleccionado:</span>
+                        <span class="font-semibold text-primary-600">{{ selectedEmployeeName }}</span>
+                    </div>
                 </div>
                 <div class="card-body">
-                    <form @submit.prevent="generateIndividual" class="flex flex-col sm:flex-row gap-4">
-                        <select v-model="selectedEmployee" class="select flex-1" required>
-                            <option value="">Seleccionar Empleado</option>
-                            <option v-for="emp in employees" :key="emp.id" :value="emp.id">{{ emp.name }}</option>
-                        </select>
-                        <button type="submit" class="btn btn-primary">
+                    <div class="flex flex-col sm:flex-row gap-4">
+                        <div class="flex-1 relative">
+                            <select v-model="selectedEmployee" @change="generateIndividual" class="select">
+                                <option value="">Seleccionar Empleado</option>
+                                <option v-for="emp in employees" :key="emp.id" :value="emp.id">{{ emp.name }}</option>
+                            </select>
+                        </div>
+                        <button v-if="selectedEmployee" @click="clearSelection" class="btn btn-ghost">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                             </svg>
-                            Buscar
+                            Limpiar
                         </button>
-                    </form>
+                    </div>
                 </div>
             </div>
 
-            <div v-if="props.individualReport" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <!-- Employee Info Card -->
-                <div class="card">
-                    <div class="card-header">
-                        <h3 class="font-semibold text-surface-900">Información del Empleado</h3>
-                    </div>
-                    <div class="card-body text-center">
-                        <div class="w-20 h-20 mx-auto mb-4 rounded-full bg-gradient-to-br from-violet-500 to-violet-600 flex items-center justify-center text-white text-2xl font-bold">
-                            {{ getInitials(props.individualReport.employee?.name) }}
+            <div v-if="props.individualReport" class="space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="font-semibold text-surface-900">Información del Empleado</h3>
                         </div>
-                        <h4 class="text-lg font-bold text-surface-900">{{ props.individualReport.employee?.name }}</h4>
-                        <p class="text-surface-500">{{ props.individualReport.employee?.role?.name }}</p>
-                        <p class="text-sm text-surface-400 mt-2">{{ props.individualReport.employee?.department }}</p>
+                        <div class="card-body">
+                            <div class="flex items-center gap-4">
+                                <div class="w-16 h-16 rounded-full bg-gradient-to-br from-violet-500 to-violet-600 flex items-center justify-center text-white text-xl font-bold flex-shrink-0">
+                                    {{ getInitials(props.individualReport.employee?.name) }}
+                                </div>
+                                <div>
+                                    <h4 class="text-lg font-bold text-surface-900">{{ props.individualReport.employee?.name }}</h4>
+                                    <p class="text-surface-600">{{ props.individualReport.employee?.role?.name }}</p>
+                                    <p class="text-sm text-surface-400">{{ props.individualReport.employee?.department }}</p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                </div>
 
-                <!-- Score Summary -->
-                <div class="card">
-                    <div class="card-header">
-                        <h3 class="font-semibold text-surface-900">Resumen de Puntuaciones</h3>
-                    </div>
-                    <div class="card-body space-y-4">
-                        <div class="flex items-center justify-between p-3 bg-primary-50 rounded-lg">
-                            <div class="flex items-center gap-3">
-                                <div class="w-10 h-10 rounded-lg bg-primary-100 flex items-center justify-center">
-                                    <svg class="w-5 h-5 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
-                                    </svg>
-                                </div>
-                                <span class="font-medium text-surface-700">Promedio</span>
-                            </div>
-                            <span class="text-2xl font-bold text-primary-600">{{ props.individualReport.averageScore }}</span>
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="font-semibold text-surface-900">Resumen de Puntuaciones</h3>
                         </div>
-                        <div class="flex items-center justify-between p-3 bg-emerald-50 rounded-lg">
-                            <div class="flex items-center gap-3">
-                                <div class="w-10 h-10 rounded-lg bg-emerald-100 flex items-center justify-center">
-                                    <svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path>
-                                    </svg>
+                        <div class="card-body">
+                            <div class="grid grid-cols-3 gap-4">
+                                <div class="text-center p-4 bg-primary-50 rounded-xl">
+                                    <div class="text-2xl font-bold text-primary-600">{{ props.individualReport.averageScore }}</div>
+                                    <div class="text-xs text-surface-500 mt-1">Promedio</div>
                                 </div>
-                                <span class="font-medium text-surface-700">Más Alto</span>
-                            </div>
-                            <span class="text-2xl font-bold text-emerald-600">{{ props.individualReport.highestScore }}</span>
-                        </div>
-                        <div class="flex items-center justify-between p-3 bg-amber-50 rounded-lg">
-                            <div class="flex items-center gap-3">
-                                <div class="w-10 h-10 rounded-lg bg-amber-100 flex items-center justify-center">
-                                    <svg class="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6"></path>
-                                    </svg>
+                                <div class="text-center p-4 bg-emerald-50 rounded-xl">
+                                    <div class="text-2xl font-bold text-emerald-600">{{ props.individualReport.highestScore }}</div>
+                                    <div class="text-xs text-surface-500 mt-1">Más Alto</div>
                                 </div>
-                                <span class="font-medium text-surface-700">Más Bajo</span>
+                                <div class="text-center p-4 bg-amber-50 rounded-xl">
+                                    <div class="text-2xl font-bold text-amber-600">{{ props.individualReport.lowestScore }}</div>
+                                    <div class="text-xs text-surface-500 mt-1">Más Bajo</div>
+                                </div>
                             </div>
-                            <span class="text-2xl font-bold text-amber-600">{{ props.individualReport.lowestScore }}</span>
                         </div>
                     </div>
                 </div>
 
-                <!-- Score Distribution Chart -->
-                <div class="card">
+                <div v-if="props.individualReport?.evaluations?.length" class="card">
                     <div class="card-header">
-                        <h3 class="font-semibold text-surface-900">Distribución de Puntuaciones</h3>
+                        <h3 class="font-semibold text-surface-900">Gráfico de Radar - Evaluaciones</h3>
                     </div>
                     <div class="card-body">
-                        <div class="flex items-end justify-center gap-2 h-40">
-                            <div v-for="(score, index) in scoreDistribution" :key="index"
-                                class="w-12 rounded-t-lg transition-all duration-500"
-                                :class="getBarColor(index)"
-                                :style="{ height: score + '%' }">
-                                <span class="block text-xs text-white text-center pt-1">{{ getScoreLabel(index) }}</span>
+                        <div class="flex flex-col lg:flex-row gap-6 items-start">
+                            <div class="w-full lg:w-1/2 h-80">
+                                <Radar :data="radarChartData" :options="radarOptions" />
+                            </div>
+                            <div class="w-full lg:w-1/2">
+                                <div class="space-y-3">
+                                    <div v-for="(eva, index) in props.individualReport.evaluations" :key="eva.id"
+                                        class="flex items-center justify-between p-3 rounded-lg border border-surface-200 hover:border-primary-300 transition-colors cursor-pointer"
+                                        :class="selectedEvaluationIndex === index ? 'bg-primary-50 border-primary-400' : 'bg-surface-50'"
+                                        @click="selectedEvaluationIndex = index">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-bold"
+                                                :style="{ backgroundColor: chartColors[index % chartColors.length] }">
+                                                {{ index + 1 }}
+                                            </div>
+                                            <div>
+                                                <p class="font-medium text-surface-900">{{ eva.period }}</p>
+                                                <p class="text-xs text-surface-500">{{ formatDate(eva.evaluator_completed_date) }}</p>
+                                            </div>
+                                        </div>
+                                        <div class="text-right">
+                                            <p class="text-lg font-bold text-surface-900">{{ eva.total_score?.toFixed(2) }}</p>
+                                            <p class="text-xs text-surface-500">/ 5.0</p>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                        <div class="flex justify-between mt-2 text-xs text-surface-500">
-                            <span>1.0</span>
-                            <span>5.0</span>
+                    </div>
+                </div>
+
+                <div v-if="selectedEvaluation" class="card">
+                    <div class="card-header flex items-center justify-between">
+                        <h3 class="font-semibold text-surface-900">Detalle: {{ selectedEvaluation.period }}</h3>
+                        <button @click="selectedEvaluationIndex = null" class="btn btn-ghost btn-sm">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                            <div class="p-4 bg-primary-50 rounded-xl text-center">
+                                <div class="text-3xl font-bold text-primary-600">{{ selectedEvaluation.competency_score?.toFixed(2) }}</div>
+                                <div class="text-sm text-surface-600">Competencias (30%)</div>
+                            </div>
+                            <div class="p-4 bg-emerald-50 rounded-xl text-center">
+                                <div class="text-3xl font-bold text-emerald-600">{{ selectedEvaluation.indicator_score?.toFixed(2) }}</div>
+                                <div class="text-sm text-surface-600">Indicadores (70%)</div>
+                            </div>
+                            <div class="p-4 bg-violet-50 rounded-xl text-center">
+                                <div class="text-3xl font-bold text-violet-600">{{ selectedEvaluation.total_score?.toFixed(2) }}</div>
+                                <div class="text-sm text-surface-600">Puntaje Total</div>
+                            </div>
+                        </div>
+                        <div v-if="selectedEvaluation.evaluator" class="p-3 bg-surface-50 rounded-lg mb-4">
+                            <span class="text-sm text-surface-600">Evaluado por: </span>
+                            <span class="font-medium text-surface-900">{{ selectedEvaluation.evaluator.name }}</span>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Evaluation History Table -->
-            <div v-if="props.individualReport?.evaluations?.length" class="card">
-                <div class="card-header">
-                    <h3 class="font-semibold text-surface-900">Historial de Evaluaciones</h3>
-                </div>
-                <div class="card-body">
-                    <div class="table-container">
-                        <table class="table">
-                            <thead>
-                                <tr>
-                                    <th class="text-left py-3 px-4 font-semibold">Período</th>
-                                    <th class="text-left py-3 px-4 font-semibold">Estado</th>
-                                    <th class="text-left py-3 px-4 font-semibold">Puntuación</th>
-                                    <th class="text-left py-3 px-4 font-semibold">Fecha</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr v-for="evaluation in props.individualReport.evaluations" :key="evaluation.id" class="border-t">
-                                    <td class="py-3 px-4 font-medium text-surface-900">{{ evaluation.period }}</td>
-                                    <td class="py-3 px-4">
-                                        <span :class="getStatusClass(evaluation.status)" class="badge">
-                                            {{ formatStatus(evaluation.status) }}
-                                        </span>
-                                    </td>
-                                    <td class="py-3 px-4">
-                                        <div v-if="evaluation.total_score" class="flex items-center gap-2">
-                                            <div class="w-16 h-2 bg-surface-200 rounded-full overflow-hidden">
-                                                <div class="h-full bg-primary-500 rounded-full" :style="{ width: (evaluation.total_score / 5 * 100) + '%' }"></div>
+                <div v-if="props.individualReport?.evaluations?.length" class="card">
+                    <div class="card-header">
+                        <h3 class="font-semibold text-surface-900">Historial de Evaluaciones</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-container">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th class="text-left py-3 px-4 font-semibold">Período</th>
+                                        <th class="text-left py-3 px-4 font-semibold">Evaluador</th>
+                                        <th class="text-left py-3 px-4 font-semibold">Competencias</th>
+                                        <th class="text-left py-3 px-4 font-semibold">Indicadores</th>
+                                        <th class="text-left py-3 px-4 font-semibold">Puntuación</th>
+                                        <th class="text-left py-3 px-4 font-semibold">Fecha</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr v-for="evaluation in props.individualReport.evaluations" :key="evaluation.id" class="border-t">
+                                        <td class="py-3 px-4 font-medium text-surface-900">{{ evaluation.period }}</td>
+                                        <td class="py-3 px-4 text-surface-600">{{ evaluation.evaluator?.name || 'N/A' }}</td>
+                                        <td class="py-3 px-4">
+                                            <span class="font-semibold text-primary-600">{{ evaluation.competency_score?.toFixed(2) }}</span>
+                                        </td>
+                                        <td class="py-3 px-4">
+                                            <span class="font-semibold text-emerald-600">{{ evaluation.indicator_score?.toFixed(2) }}</span>
+                                        </td>
+                                        <td class="py-3 px-4">
+                                            <div class="flex items-center gap-2">
+                                                <div class="w-16 h-2 bg-surface-200 rounded-full overflow-hidden">
+                                                    <div class="h-full bg-primary-500 rounded-full" :style="{ width: (evaluation.total_score / 5 * 100) + '%' }"></div>
+                                                </div>
+                                                <span class="font-semibold text-surface-900">{{ evaluation.total_score?.toFixed(2) }}</span>
                                             </div>
-                                            <span class="font-semibold text-surface-900">{{ evaluation.total_score }}</span>
-                                        </div>
-                                        <span v-else class="text-surface-400">N/A</span>
-                                    </td>
-                                    <td class="py-3 px-4 text-surface-500">{{ formatDate(evaluation.created_at) }}</td>
-                                </tr>
-                            </tbody>
-                        </table>
+                                        </td>
+                                        <td class="py-3 px-4 text-surface-500">{{ formatDate(evaluation.evaluator_completed_date) }}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div v-else class="card p-8">
+                    <div class="empty-state">
+                        <svg class="empty-state-icon w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                        <p class="empty-state-title">Sin evaluaciones</p>
+                        <p class="empty-state-description">Este empleado no tiene evaluaciones completadas.</p>
                     </div>
                 </div>
             </div>
 
-            <div v-else-if="individualReport" class="card p-8">
-                <div class="empty-state">
-                    <svg class="empty-state-icon w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                    </svg>
-                    <p class="empty-state-title">Sin evaluaciones</p>
-                    <p class="empty-state-description">Este empleado no tiene evaluaciones registradas.</p>
+            <div v-else class="card p-12">
+                <div class="text-center">
+                    <div class="w-20 h-20 mx-auto mb-4 rounded-full bg-surface-100 flex items-center justify-center">
+                        <svg class="w-10 h-10 text-surface-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-lg font-semibold text-surface-900 mb-2">Selecciona un empleado</h3>
+                    <p class="text-surface-500">Elige un empleado del menú desplegable para ver sus reportes.</p>
                 </div>
             </div>
         </div>
 
-        <!-- Group Report (Admin Only) -->
         <div v-if="activeTab === 'group' && isAdmin" class="space-y-6">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div class="card">
@@ -252,7 +301,6 @@
             </div>
         </div>
 
-        <!-- Trends Report -->
         <div v-if="activeTab === 'trends'" class="space-y-6">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div class="card">
@@ -328,9 +376,21 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
-import { usePage } from '@inertiajs/vue3';
+import { ref, computed, watch } from 'vue';
+import { router, usePage } from '@inertiajs/vue3';
+import { Radar } from 'vue-chartjs';
+import {
+    Chart as ChartJS,
+    RadialLinearScale,
+    PointElement,
+    LineElement,
+    Filler,
+    Tooltip,
+    Legend
+} from 'chart.js';
 import AppLayout from '../Layouts/AppLayout.vue';
+
+ChartJS.register(RadialLinearScale, PointElement, LineElement, Filler, Tooltip, Legend);
 
 defineOptions({
     layout: AppLayout,
@@ -348,7 +408,30 @@ const props = defineProps({
 });
 
 const activeTab = ref('individual');
-const selectedEmployee = ref('');
+const selectedEmployee = ref(props.individualReport?.employee?.id || '');
+const selectedEvaluationIndex = ref(null);
+
+const chartColors = [
+    'rgba(59, 130, 246, 1)',
+    'rgba(16, 185, 129, 1)',
+    'rgba(139, 92, 246, 1)',
+    'rgba(245, 158, 11, 1)',
+    'rgba(236, 72, 153, 1)',
+    'rgba(14, 165, 233, 1)',
+];
+
+const chartBackgroundColors = chartColors.map(c => c.replace('1)', '0.2)'));
+
+const selectedEmployeeName = computed(() => {
+    if (!selectedEmployee.value) return '';
+    const emp = props.employees.find(e => e.id === selectedEmployee.value);
+    return emp?.name || '';
+});
+
+const selectedEvaluation = computed(() => {
+    if (selectedEvaluationIndex.value === null || !props.individualReport?.evaluations) return null;
+    return props.individualReport.evaluations[selectedEvaluationIndex.value];
+});
 
 const tabs = [
     { key: 'individual', label: 'Reportes Individuales' },
@@ -363,18 +446,40 @@ const filteredTabs = computed(() => {
     return tabs;
 });
 
+const changeTab = (tab) => {
+    activeTab.value = tab;
+    selectedEmployee.value = '';
+    selectedEvaluationIndex.value = null;
+
+    if (tab === 'group' && isAdmin.value) {
+        router.get('/reports/group', {}, { replace: true, preserveState: true });
+    } else if (tab === 'trends') {
+        router.get('/reports/trends', {}, { replace: true, preserveState: true });
+    } else {
+        router.get('/reports', {}, { replace: true, preserveState: true });
+    }
+};
+
+const generateIndividual = () => {
+    if (selectedEmployee.value) {
+        selectedEvaluationIndex.value = null;
+        router.get('/reports', { employee_id: selectedEmployee.value }, { replace: true, preserveState: true });
+    }
+};
+
+const clearSelection = () => {
+    selectedEmployee.value = '';
+    selectedEvaluationIndex.value = null;
+    router.get('/reports', {}, { replace: true, preserveState: true });
+};
+
 const getInitials = (name) => {
     if (!name) return '?';
     return name.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase();
 };
 
-const generateIndividual = () => {
-    if (selectedEmployee.value) {
-        window.location.href = `/reports/individual?employee_id=${selectedEmployee.value}`;
-    }
-};
-
 const formatDate = (date) => {
+    if (!date) return 'N/A';
     return new Date(date).toLocaleDateString('es-ES', {
         year: 'numeric',
         month: 'short',
@@ -400,42 +505,134 @@ const formatStatus = (status) => {
     return labels[status] || status;
 };
 
-// Chart helpers
-const scoreDistribution = computed(() => {
-    if (!props.individualReport?.evaluations) return [0, 0, 0, 0, 0];
-    const dist = [0, 0, 0, 0, 0];
-    props.individualReport.evaluations.forEach(e => {
-        if (e.total_score) {
-            const idx = Math.min(4, Math.floor(e.total_score) - 1);
-            if (idx >= 0) dist[idx]++;
-        }
+const radarChartData = computed(() => {
+    if (!props.individualReport?.evaluations?.length) {
+        return { labels: [], datasets: [] };
+    }
+
+    const evaluations = props.individualReport.evaluations;
+    const allLabels = [];
+    const labelScores = {};
+
+    evaluations.forEach(eva => {
+        eva.competencies?.forEach(comp => {
+            if (!allLabels.includes(comp.name)) {
+                allLabels.push(comp.name);
+            }
+            labelScores[comp.name] = comp.score || 0;
+        });
+        eva.indicators?.forEach(ind => {
+            if (!allLabels.includes(ind.name)) {
+                allLabels.push(ind.name);
+            }
+            labelScores[ind.name] = ind.score || 0;
+        });
     });
-    const max = Math.max(...dist, 1);
-    return dist.map(d => (d / max) * 80);
+
+    if (allLabels.length === 0) {
+        return {
+            labels: ['Sin datos'],
+            datasets: []
+        };
+    }
+
+    return {
+        labels: allLabels,
+        datasets: evaluations.map((eva, index) => {
+            const data = allLabels.map(label => {
+                const comp = eva.competencies?.find(c => c.name === label);
+                const ind = eva.indicators?.find(i => i.name === label);
+                return (comp?.score || ind?.score || 0);
+            });
+
+            return {
+                label: eva.period,
+                data: data,
+                fill: true,
+                backgroundColor: chartBackgroundColors[index % chartColors.length],
+                borderColor: chartColors[index % chartColors.length],
+                borderWidth: 2,
+                pointBackgroundColor: chartColors[index % chartColors.length],
+                pointBorderColor: '#fff',
+                pointHoverBackgroundColor: '#fff',
+                pointHoverBorderColor: chartColors[index % chartColors.length],
+                pointRadius: 5,
+                pointHoverRadius: 7,
+            };
+        })
+    };
 });
 
-const getBarColor = (index) => {
-    const colors = ['bg-rose-500', 'bg-amber-500', 'bg-yellow-500', 'bg-primary-500', 'bg-emerald-500'];
-    return colors[index];
+const radarOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    scales: {
+        r: {
+            min: 0,
+            max: 5,
+            ticks: {
+                stepSize: 0.5,
+                display: true,
+                backdropColor: 'transparent'
+            },
+            pointLabels: {
+                font: {
+                    size: 11,
+                    weight: '500'
+                },
+                color: '#4b5563'
+            },
+            grid: {
+                color: 'rgba(156, 163, 175, 0.25)'
+            },
+            angleLines: {
+                color: 'rgba(156, 163, 175, 0.25)'
+            }
+        }
+    },
+    plugins: {
+        legend: {
+            position: 'bottom',
+            labels: {
+                usePointStyle: true,
+                padding: 15,
+                font: {
+                    size: 11
+                }
+            }
+        },
+        tooltip: {
+            backgroundColor: 'rgba(17, 24, 39, 0.9)',
+            titleFont: { size: 12 },
+            bodyFont: { size: 11 },
+            padding: 10,
+            cornerRadius: 6,
+            callbacks: {
+                title: function(context) {
+                    return context[0].label;
+                },
+                label: function(context) {
+                    return context.dataset.label + ': ' + (context.raw || 0).toFixed(2);
+                }
+            }
+        }
+    }
 };
 
-const getScoreLabel = (index) => {
-    return (index + 1);
-};
-
-// Group report helpers
 const sortedGroupReport = computed(() => {
     return [...(groupReport || [])].sort((a, b) => parseFloat(b.average_score) - parseFloat(a.average_score));
 });
 
+const groupReport = computed(() => props.groupReport);
+
 const overallAverage = computed(() => {
-    if (!groupReport?.length) return '0.00';
-    const sum = groupReport.reduce((acc, r) => acc + parseFloat(r.average_score || 0), 0);
-    return (sum / groupReport.length).toFixed(2);
+    if (!groupReport.value?.length) return '0.00';
+    const sum = groupReport.value.reduce((acc, r) => acc + parseFloat(r.average_score || 0), 0);
+    return (sum / groupReport.value.length).toFixed(2);
 });
 
 const totalEvaluations = computed(() => {
-    return groupReport?.reduce((acc, r) => acc + (r.total_evaluations || 0), 0) || 0;
+    return groupReport.value?.reduce((acc, r) => acc + (r.total_evaluations || 0), 0) || 0;
 });
 
 const getPerformanceColor = (score) => {
@@ -462,7 +659,6 @@ const getPerformanceLabel = (score) => {
     return 'Bajo';
 };
 
-// Trends helpers
 const maxTrendEvaluations = computed(() => {
     return Math.max(...(trendsReport?.map(r => r.total_evaluations) || [1]), 1);
 });
@@ -475,14 +671,16 @@ const getScoreBarColor = (score) => {
     return 'bg-rose-500';
 };
 
+const trendsReport = computed(() => props.trendsReport);
+
 const trendSummary = computed(() => {
-    const evaluations = trendsReport?.reduce((acc, r) => acc + (r.total_evaluations || 0), 0) || 0;
-    const avg = trendsReport?.length ? (trendsReport.reduce((acc, r) => acc + parseFloat(r.average_score || 0), 0) / trendsReport.length).toFixed(2) : '0.00';
+    const evaluations = trendsReport.value?.reduce((acc, r) => acc + (r.total_evaluations || 0), 0) || 0;
+    const avg = trendsReport.value?.length ? (trendsReport.value.reduce((acc, r) => acc + parseFloat(r.average_score || 0), 0) / trendsReport.value.length).toFixed(2) : '0.00';
 
     let trend = 0;
-    if (trendsReport?.length >= 2) {
-        const recent = parseFloat(trendsReport[trendsReport.length - 1]?.average_score || 0);
-        const older = parseFloat(trendsReport[0]?.average_score || 0);
+    if (trendsReport.value?.length >= 2) {
+        const recent = parseFloat(trendsReport.value[trendsReport.value.length - 1]?.average_score || 0);
+        const older = parseFloat(trendsReport.value[0]?.average_score || 0);
         trend = (recent - older).toFixed(2);
     }
 
@@ -491,5 +689,11 @@ const trendSummary = computed(() => {
         averageScore: avg,
         trend: trend
     };
+});
+
+watch(() => props.individualReport, (newVal) => {
+    if (newVal?.employee?.id && !selectedEmployee.value) {
+        selectedEmployee.value = newVal.employee.id;
+    }
 });
 </script>
