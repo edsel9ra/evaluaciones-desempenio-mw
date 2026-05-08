@@ -38,7 +38,7 @@
                 </div>
             </div>
 
-            <div v-if="individualReport" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div v-if="props.individualReport" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <!-- Employee Info Card -->
                 <div class="card">
                     <div class="card-header">
@@ -46,11 +46,11 @@
                     </div>
                     <div class="card-body text-center">
                         <div class="w-20 h-20 mx-auto mb-4 rounded-full bg-gradient-to-br from-violet-500 to-violet-600 flex items-center justify-center text-white text-2xl font-bold">
-                            {{ getInitials(individualReport.employee?.name) }}
+                            {{ getInitials(props.individualReport.employee?.name) }}
                         </div>
-                        <h4 class="text-lg font-bold text-surface-900">{{ individualReport.employee?.name }}</h4>
-                        <p class="text-surface-500">{{ individualReport.employee?.role?.name }}</p>
-                        <p class="text-sm text-surface-400 mt-2">{{ individualReport.employee?.department }}</p>
+                        <h4 class="text-lg font-bold text-surface-900">{{ props.individualReport.employee?.name }}</h4>
+                        <p class="text-surface-500">{{ props.individualReport.employee?.role?.name }}</p>
+                        <p class="text-sm text-surface-400 mt-2">{{ props.individualReport.employee?.department }}</p>
                     </div>
                 </div>
 
@@ -69,7 +69,7 @@
                                 </div>
                                 <span class="font-medium text-surface-700">Promedio</span>
                             </div>
-                            <span class="text-2xl font-bold text-primary-600">{{ individualReport.averageScore }}</span>
+                            <span class="text-2xl font-bold text-primary-600">{{ props.individualReport.averageScore }}</span>
                         </div>
                         <div class="flex items-center justify-between p-3 bg-emerald-50 rounded-lg">
                             <div class="flex items-center gap-3">
@@ -80,7 +80,7 @@
                                 </div>
                                 <span class="font-medium text-surface-700">Más Alto</span>
                             </div>
-                            <span class="text-2xl font-bold text-emerald-600">{{ individualReport.highestScore }}</span>
+                            <span class="text-2xl font-bold text-emerald-600">{{ props.individualReport.highestScore }}</span>
                         </div>
                         <div class="flex items-center justify-between p-3 bg-amber-50 rounded-lg">
                             <div class="flex items-center gap-3">
@@ -91,7 +91,7 @@
                                 </div>
                                 <span class="font-medium text-surface-700">Más Bajo</span>
                             </div>
-                            <span class="text-2xl font-bold text-amber-600">{{ individualReport.lowestScore }}</span>
+                            <span class="text-2xl font-bold text-amber-600">{{ props.individualReport.lowestScore }}</span>
                         </div>
                     </div>
                 </div>
@@ -119,7 +119,7 @@
             </div>
 
             <!-- Evaluation History Table -->
-            <div v-if="individualReport?.evaluations?.length" class="card">
+            <div v-if="props.individualReport?.evaluations?.length" class="card">
                 <div class="card-header">
                     <h3 class="font-semibold text-surface-900">Historial de Evaluaciones</h3>
                 </div>
@@ -135,7 +135,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr v-for="evaluation in individualReport.evaluations" :key="evaluation.id" class="border-t">
+                                <tr v-for="evaluation in props.individualReport.evaluations" :key="evaluation.id" class="border-t">
                                     <td class="py-3 px-4 font-medium text-surface-900">{{ evaluation.period }}</td>
                                     <td class="py-3 px-4">
                                         <span :class="getStatusClass(evaluation.status)" class="badge">
@@ -289,7 +289,7 @@
                                     <div class="w-32 h-2 bg-surface-200 rounded-full overflow-hidden">
                                         <div class="h-full rounded-full" :class="getScoreBarColor(r.average_score)" :style="{ width: (r.average_score / 5 * 100) + '%' }"></div>
                                     </div>
-                                    <span class="text-sm font-semibold" :class="getPerformanceTextColor(r.average_score) w-8 text-right">{{ r.average_score }}</span>
+                                    <span class="text-sm font-semibold" :class="getPerformanceTextColor(r.average_score) + ' w-8 text-right'">{{ r.average_score }}</span>
                                 </div>
                             </div>
                             <div v-if="!trendsReport?.length" class="text-center py-4 text-surface-500">
@@ -340,7 +340,7 @@ const page = usePage();
 const isEvaluator = computed(() => page.props.auth?.user?.role === 'evaluator');
 const isAdmin = computed(() => page.props.auth?.user?.role === 'administrator');
 
-defineProps({
+const props = defineProps({
     employees: { type: Array, default: () => [] },
     individualReport: { type: Object, default: null },
     groupReport: { type: Array, default: () => [] },
@@ -402,9 +402,9 @@ const formatStatus = (status) => {
 
 // Chart helpers
 const scoreDistribution = computed(() => {
-    if (!individualReport?.evaluations) return [0, 0, 0, 0, 0];
+    if (!props.individualReport?.evaluations) return [0, 0, 0, 0, 0];
     const dist = [0, 0, 0, 0, 0];
-    individualReport.evaluations.forEach(e => {
+    props.individualReport.evaluations.forEach(e => {
         if (e.total_score) {
             const idx = Math.min(4, Math.floor(e.total_score) - 1);
             if (idx >= 0) dist[idx]++;

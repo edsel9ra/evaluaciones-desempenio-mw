@@ -5,7 +5,7 @@
                 <h1 class="page-title">Evaluaciones</h1>
                 <p class="page-subtitle">Ver y gestionar evaluaciones</p>
             </div>
-            <div class="flex gap-2">
+            <div v-if="isEvaluator" class="flex gap-2">
                 <Link href="/create-evaluation" class="btn btn-primary">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
@@ -91,7 +91,8 @@ defineOptions({
 });
 
 const page = usePage();
-const userRole = computed(() => page.props.auth?.user?.role);
+const isAdmin = computed(() => page.props.auth?.user?.role === 'administrator');
+const isEvaluator = computed(() => page.props.auth?.user?.role === 'evaluator');
 
 defineProps({
     evaluations: { type: Array, default: () => [] },
@@ -122,6 +123,7 @@ const formatStatus = (status) => {
 
 const getButtonLabel = (evaluation) => {
     if (evaluation.status === 'completed') return 'Ver';
+    if (isAdmin.value) return 'Ver';
     return 'Realizar';
 };
 
@@ -131,11 +133,9 @@ const performEvaluation = (id) => {
 
 const formatScore = (value) => {
     const numberValue = Number(value);
-
     if (!Number.isFinite(numberValue)) {
         return '0.00';
     }
-
     return numberValue.toFixed(2);
 };
 </script>

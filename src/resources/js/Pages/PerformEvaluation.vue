@@ -201,7 +201,7 @@
                 </template>
                 <template v-else>
                     <div class="flex gap-3">
-                        <Link v-if="isEvaluator" href="/view-evaluations" class="btn btn-primary flex-1 justify-center">
+                        <Link v-if="isEvaluator || props.isAdmin" href="/view-evaluations" class="btn btn-primary flex-1 justify-center">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
                             </svg>
@@ -237,6 +237,9 @@ const props = defineProps({
     evaluation: { type: Object, required: true },
     competencies: { type: Array, default: () => [] },
     indicators: { type: Array, default: () => [] },
+    isAdmin: { type: Boolean, default: false },
+    isEmployeeEvaluated: { type: Boolean, default: false },
+    isEvaluatorOfEvaluation: { type: Boolean, default: false },
 });
 
 const form = useForm({});
@@ -290,7 +293,10 @@ const getComment = (key) => {
 };
 
 const isReadOnly = computed(() => {
-    return isEmployee.value || (props.evaluation.status === 'completed' && isEmployee.value);
+    if (isEmployee.value || props.isAdmin) return true;
+    if (props.isEmployeeEvaluated && !props.isEvaluatorOfEvaluation) return true;
+    if (props.evaluation.status === 'completed' && isEmployee.value) return true;
+    return false;
 });
 
 onMounted(() => {

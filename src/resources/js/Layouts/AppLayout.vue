@@ -163,9 +163,9 @@ const navItems = [
     { path: '/dashboard', label: 'Dashboard', icon: DashboardIcon, roles: ['administrator', 'evaluator', 'employee'] },
     { path: '/manage-employees', label: 'Gestión de Empleados', icon: UsersIcon, roles: ['administrator'] },
     { path: '/manage-items', label: 'Items de Evaluación', icon: CogIcon, roles: ['administrator'] },
-    { path: '/create-evaluation', label: 'Crear Evaluación', icon: ClipboardIcon, roles: ['administrator', 'evaluator'] },
     { path: '/view-evaluations', label: 'Ver Evaluaciones', icon: DocumentIcon, roles: ['administrator', 'evaluator'] },
-    { path: '/my-evaluations', label: 'Mis Evaluaciones', icon: DocumentIcon, roles: ['employee'] },
+    { path: '/create-evaluation', label: 'Crear Evaluación', icon: ClipboardIcon, roles: ['evaluator'] },
+    { path: '/my-evaluations', label: 'Mis Evaluaciones', icon: DocumentIcon, roles: ['employee', 'evaluator'] },
     { path: '/reports', label: 'Reportes', icon: ChartIcon, roles: ['administrator', 'evaluator'] },
 ];
 

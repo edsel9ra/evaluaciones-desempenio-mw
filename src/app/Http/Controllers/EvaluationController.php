@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Services\EvaluationService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 
 class EvaluationController extends Controller
@@ -45,33 +46,48 @@ class EvaluationController extends Controller
         ]);
 
         $result = $this->evaluationService->createEvaluation($validated);
-        
+
         if ($result['success']) {
             return redirect()->route('view-evaluations')->with('success', 'Evaluation created successfully');
         }
-        
+
         return back()->with('error', $result['message']);
     }
 
     public function show(int $id)
     {
+        $user = Auth::user();
         $evaluation = $this->evaluationService->getEvaluationWithItems($id);
         $items = $this->evaluationService->getCompetenciesAndIndicators();
+
+        $employee = \App\Models\Employee::where('user_id', $user->id)->first();
+        $isEmployeeEvaluated = $employee && $evaluation->employee_id === $employee->id;
+        $isEvaluatorOfEvaluation = $evaluation->evaluator_id === $user->id;
+
         return Inertia::render('PerformEvaluation', [
             'evaluation' => $evaluation,
             'competencies' => $items['competencies'],
             'indicators' => $items['indicators'],
+            'isAdmin' => $user->role === 'administrator',
+            'isEmployeeEvaluated' => $isEmployeeEvaluated,
+            'isEvaluatorOfEvaluation' => $isEvaluatorOfEvaluation,
         ]);
     }
 
     public function update(Request $request, int $id)
     {
+        $user = Auth::user();
+
+        if ($user->role === 'administrator') {
+            abort(403, 'Los administradores no pueden modificar evaluaciones');
+        }
+
         $data = $request->all();
-        
+
         if (isset($data['items']) && is_string($data['items'])) {
             $data['items'] = json_decode($data['items'], true) ?? [];
         }
-        
+
         if (($data['action'] ?? '') === 'complete') {
             $result = $this->evaluationService->completeEvaluation($id, $data);
             if ($result['success']) {
@@ -83,7 +99,7 @@ class EvaluationController extends Controller
                 return back()->with('success', 'Progress saved successfully!');
             }
         }
-        
+
         return back()->with('error', $result['message']);
     }
 
