@@ -35,7 +35,7 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('/competencies/{id}', [ItemController::class, 'destroyCompetency'])->name('competencies.destroy');
         Route::post('/indicators', [ItemController::class, 'storeIndicator'])->name('indicators.store');
         Route::put('/indicators/{id}', [ItemController::class, 'updateIndicator'])->name('indicators.update');
-        Route::delete('/indicators/{id}', [ItemController::class, 'destroyIndicator')->name('indicators.destroy');
+        Route::delete('/indicators/{id}', [ItemController::class, 'destroyIndicator'])->name('indicators.destroy');
 
         Route::post('/role-competency/attach', [ItemController::class, 'attachRoleCompetency'])->name('role-competency.attach');
         Route::post('/role-competency/detach', [ItemController::class, 'detachRoleCompetency'])->name('role-competency.detach');
